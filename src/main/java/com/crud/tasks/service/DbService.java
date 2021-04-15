@@ -11,23 +11,21 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class DbService {
-
-    private TaskRepository repository;
+    private final TaskRepository repository;
 
     public List<Task> getAllTasks() {
         return repository.findAll();
+    }
+
+    public Optional<Task> getTaskById(final Long id) {
+        return repository.findById(id);
     }
 
     public Task saveTask(final Task task) {
         return repository.save(task);
     }
 
-    public Optional<Task> getTask(final Long id) {
-        return repository.findById(id);
-    }
-
     public void deleteTask(final Long id) {
         repository.deleteById(id);
     }
-
 }

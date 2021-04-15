@@ -14,28 +14,24 @@ import java.util.List;
 @RequestMapping("/v1/task")
 @RequiredArgsConstructor
 public class TaskController {
-
     private final DbService service;
     private final TaskMapper taskMapper;
 
-
-    @GetMapping(value = "getTasks")
+    @RequestMapping(method = RequestMethod.GET, value = "getTasks")
     public List<TaskDto> getTasks() {
         List<Task> tasks = service.getAllTasks();
         return taskMapper.mapToTaskDtoList(tasks);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "getTask")
-    public TaskDto getTask(@RequestParam Long taskId) throws TaskNotFoundException {
-        return taskMapper.mapToTaskDto(
-                service.getTask(taskId).orElseThrow(TaskNotFoundException::new)
-        );
+    public Task getTask(@RequestParam Long taskId) throws TaskNotFoundException {
+        return service.getTaskById(taskId).orElseThrow(TaskNotFoundException::new);
+
     }
 
     @DeleteMapping(value = "deleteTask")
-    public void deleteTask(Long taskId) {
+    public void deleteTask(@RequestParam Long taskId) {
         service.deleteTask(taskId);
-
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "updateTask")
@@ -50,5 +46,4 @@ public class TaskController {
         Task task = taskMapper.mapToTask(taskDto);
         service.saveTask(task);
     }
-
 }
