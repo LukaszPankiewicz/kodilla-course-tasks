@@ -34,6 +34,8 @@ public class TaskController {
 
     @DeleteMapping(value = "deleteTask")
     public void deleteTask(Long taskId) {
+        service.deleteTask(taskId);
+
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "updateTask")
