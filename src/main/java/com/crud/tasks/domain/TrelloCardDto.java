@@ -9,4 +9,5 @@ public class TrelloCardDto {
     private String description;
     private String pos;
     private String listId;
+
 }
