@@ -13,5 +13,4 @@ public class Badges {
 
     @JsonProperty("attachmentByType")
     private AttachmentByType attachment;
-
 }
