@@ -27,7 +27,9 @@ dependencies {
 	testCompileOnly 'org.projectlombok:lombok:1.18.12'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 	//runtimeOnly 'mysql:mysql-connector-java'
+
 	runtimeOnly 'org.postgresql:postgresql'
+
 
 	//providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
