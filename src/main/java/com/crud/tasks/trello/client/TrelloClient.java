@@ -28,12 +28,27 @@ public class TrelloClient {
     private final TrelloConfig trelloConfig;
 
     public List<TrelloBoardDto> getTrelloBoards() {
+        URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/members/" + trelloConfig.getTrelloUser() + "/boards")
+                .queryParam("key", trelloConfig.getTrelloAppKey())
+                .queryParam("token", trelloConfig.getTrelloToken())
+                .queryParam("fields", "name,id")
+                .queryParam("lists","all")
+                .build()
+                .encode()
+                .toUri();
+
         try {
             TrelloBoardDto[] boardsResponse = restTemplate.getForObject(boardUrl(), TrelloBoardDto[].class);
-            return Arrays.asList(ofNullable(boardsResponse).orElse(new TrelloBoardDto[0]));
+            return Optional.ofNullable(boardsResponse)
+                    .map(Arrays::asList)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(p -> Objects.nonNull(p.getId()) && Objects.nonNull(p.getName()))
+                    //.filter(p -> p.getName().contains("Kodilla"))
+                    .collect(Collectors.toList());
         } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 
