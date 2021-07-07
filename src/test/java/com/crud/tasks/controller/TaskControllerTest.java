@@ -1,7 +1,10 @@
 package com.crud.tasks.controller;
 
+import com.crud.tasks.domain.Task;
+import com.crud.tasks.domain.TaskDto;
 import com.crud.tasks.mapper.TaskMapper;
 import com.crud.tasks.service.DbService;
+import com.google.gson.Gson;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +17,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
+import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(TaskController.class)
@@ -43,5 +48,91 @@ class TaskControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(0)));
 
+    }
+
+    @Test
+    void shouldGetOneTask() throws Exception {
+        // Given
+        Task task = new Task(1L, "Task", "Content");
+        TaskDto taskDto = new TaskDto(1L, "Task", "Content");
+
+        when(dbService.getTaskById(1L)).thenReturn(Optional.of(task));
+        when(taskMapper.mapToTaskDto(any())).thenReturn(taskDto);
+
+        //When & Then
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/v1/task/getTask")
+                        .param("taskId", "1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("Task")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", Matchers.is("Content")))
+                .andExpect(MockMvcResultMatchers.status().is(200));
+
+    }
+
+    @Test
+    void shouldCreateTask() throws Exception {
+        //Given
+        Task task = new Task(1L, "Task", "Content");
+        TaskDto taskDto = new TaskDto(1L, "task", "content");
+
+        when(dbService.saveTask(any(Task.class))).thenReturn(new Task(1L, "Task", "Content"));
+
+        Gson gson = new Gson();
+        String jsonContent = gson.toJson(taskDto);
+
+        //When&Then
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                .post("/v1/task/createTask")
+                .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(jsonContent))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void shouldUpdateTask() throws Exception {
+        //Given
+        Task task = new Task(1L, "Task", "Content");
+        TaskDto taskDto = new TaskDto(1L, "Task", "Content");
+        TaskDto taskDto2 = new TaskDto(2L, "updatedTask", "updatedContent");
+
+        when(dbService.saveTask(task)).thenReturn(new Task(2L, "updatedTask", "updatedContent"));
+        when(taskMapper.mapToTaskDto(any())).thenReturn(taskDto2);
+        when(taskMapper.mapToTask(any())).thenReturn(task);
+
+        Gson gson = new Gson();
+        String jsonContent = gson.toJson(taskDto);
+
+        //When&Then
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                .put("/v1/task/updateTask")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonContent))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("updatedTask")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", Matchers.is("updatedContent")))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+    }
+
+    @Test
+    void shouldDeleteTask() throws Exception {
+        // Given
+        Task task = new Task(1L, "Task", "Content");
+
+        when(dbService.saveTask(task)).thenReturn(task);
+
+        //When & Then
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .delete("/v1/task/deleteTask")
+                        .param("taskId", "1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is(200));
     }
 }
