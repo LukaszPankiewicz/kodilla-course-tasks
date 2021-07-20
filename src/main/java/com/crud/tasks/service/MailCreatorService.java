@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class MailCreatorService {
 
@@ -21,11 +25,22 @@ public class MailCreatorService {
     @Qualifier("templateEngine")
     private TemplateEngine templateEngine;
 
+
     public String buildTrelloCardEmail(String message) {
+
+        List<String> functionality = new ArrayList<>();
+        functionality.add("You can manage your tasks");
+        functionality.add("Provides connection with Trello Account");
+        functionality.add("Application allows sending tasks to Trello");
+
         Context context = new Context();
         context.setVariable("message", message);
         context.setVariable("tasks_url", "http://localhost:8888/crud");
         context.setVariable("button", "Visit website");
+        context.setVariable("show_button", false);
+        context.setVariable("is_friend", true);
+        context.setVariable("admin_config", adminConfig);
+        context.setVariable("application_functionality", functionality);
         context.setVariable("admin_name", adminConfig.getAdminName());
         context.setVariable("company_name", adminConfig.getCompanyName());
         context.setVariable("company_goal", adminConfig.getCompanyGoal());
@@ -33,4 +48,28 @@ public class MailCreatorService {
         context.setVariable("company_phone", adminConfig.getCompanyPhone());
         return templateEngine.process("mail/created-trello-card-mail", context);
     }
+
+    public String buildScheduledEmail(String message) {
+        List<String> taskList = taskRepository.findAll().stream()
+                .map(t -> t.getTitle())
+                .collect(Collectors.toList());
+
+        Context context = new Context();
+        context.setVariable("message", message);
+        context.setVariable("tasks_url", "http://localhost:8888/tasks_frontend/");
+        context.setVariable("button", "Manage them here");
+        context.setVariable("admin_name", adminConfig.getAdminName());
+        context.setVariable("goodbye_message", "See you next time.");
+        context.setVariable("company_name", adminConfig.getCompanyName());
+        context.setVariable("company_goal", adminConfig.getCompanyGoal());
+        context.setVariable("company_email", adminConfig.getCompanyEmail());
+        context.setVariable("company_phone", adminConfig.getCompanyPhone());
+        context.setVariable("preview_message", "This is scheduled message.");
+        context.setVariable("show_button", true);
+        context.setVariable("is_friend", false);
+        context.setVariable("admin_config", adminConfig);
+        context.setVariable("task_list", taskList);
+        return templateEngine.process("mail/scheduled-mail", context);
+    }
+
 }
