@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -31,17 +31,17 @@ class TrelloControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    TrelloFacade trelloFacade;
+    private TrelloFacade trelloFacade;
 
     @Test
-    void shouldFetchEmptyTrelloBoards () throws Exception {
-        //Given
+    void shouldFetchEmptyTrelloBoards() throws Exception {
+        // Given
         when(trelloFacade.fetchTrelloBoards()).thenReturn(List.of());
 
         //When & Then
         mockMvc
                 .perform(MockMvcRequestBuilders
-                        .get("/v1/trello/getTrelloBoards")
+                        .get("/v1/trello/boards")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is(200)) // or isOk()
                 .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(0)));
@@ -52,12 +52,13 @@ class TrelloControllerTest {
         // Given
         List<TrelloListDto> trelloLists = List.of(new TrelloListDto("1", "Test list", false));
         List<TrelloBoardDto> trelloBoards = List.of(new TrelloBoardDto("Test Task", "1", trelloLists));
+
         when(trelloFacade.fetchTrelloBoards()).thenReturn(trelloBoards);
 
         //When & Then
         mockMvc
                 .perform(MockMvcRequestBuilders
-                        .get("/v1/trello/getTrelloBoards")
+                        .get("/v1/trello/boards")
                         .contentType(MediaType.APPLICATION_JSON))
                 // Trello board fields
                 .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(1)))
